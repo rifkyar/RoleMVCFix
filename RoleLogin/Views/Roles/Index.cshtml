@@ -1,0 +1,188 @@
+﻿<hr/>
+<button class="btn btn-primary" data-toggle="modal" data-target="#myModal" onclick="ClearScreen()">Create New</button>
+<hr/>
+<table id="table" class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Action 1</th>
+            <th>Action 2</th>
+        </tr>
+    </thead>
+</table>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4 class="modal-title" id="myModalLabel">Role Form</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="Id">Id</label>
+                    <input type="text" id="roleIdText" class="form-control" id="Id" placeholder="ID" />
+                </div>
+                <div class="form-group">
+                    <label for="Nama">Name</label>
+                    <input type="text" id="roleNameText" class="form-control" placeholder="Name">
+                </div>  
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="Save" onclick="Validation();">Add</button>
+                <button type="button" class="btn btn-primary" id="Update" onclick="Validation();">Update</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" rel="stylesheet"/>
+
+@section scripts{
+    <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    
+    <script>
+        $(document).ready(function () {
+            $("#table").DataTable({
+                "ajax": {
+                    "url": "/Roles/GetDataRole",
+                    "type": "GET",
+                    "dataType": "json"
+                },
+                "columns": [
+                    { "data": "Name" },
+                    {
+                        "render": function (data, type, row, meta) {
+                            return "<a onclick=Edit('" + row.Id +"');>Edit</a>";
+                        }
+                    }, {
+                        "render": function (data, type, row) {
+                            return "<a onclick=Delete('"+ row.Id +"');>Delete</a>";
+                        }
+                    }
+                ]
+            });
+        });
+        //function Delete(Id) {
+        //    swal.fire({
+        //        title: "Are You Sure?",
+        //        text: "You Won't Be Able to Revert This!",
+        //        icon: "warning",
+        //        showCancelButton: true,
+        //        confirmButtonColor: '#3085d6',
+        //        cancelButtonColor: '#d33',
+        //        confirmButtonText: 'yes, Delete It!'
+        //    }).then((result) => {
+        //        if (result.value) {
+        //            $.ajax({
+        //                "url": "/Roles/Delete/",
+        //                "type": "DELETE",
+        //                "dataType": "json",
+        //                "data": { id=Id }
+        //            }).then((hasil
+        //            ) => {
+        //                if (result.data > 0) {
+        //                    Swal.fire(
+        //                        'Success',
+        //                        'Your File Has Been Deleted',
+        //                        'Success'
+        //                    )
+        //                } else {
+        //                    Swal.fire(
+        //                        'Failed',
+        //                        'Your file not Deleted',
+        //                        'Failed'
+        //                    )
+        //                }
+        //            })
+        //        }
+        //    })
+        //}
+        //function Edit(Id) {
+        //    var role = new Object();
+        //    role.Id = $("#roleIdText").val();
+        //    role.Name = $("roleNameText").val();
+        //    $.ajax({
+        //        "url": "/Roles/Edit/",
+        //        "type": "PUT",
+        //        "dataType": "json",
+        //        "data": role
+        //    }).then((result) => {
+        //        if (result.data > 0) {
+        //            Swal.fire(
+        //                'Success',
+        //                'Your file has been Updated',
+        //                'Success'
+        //            )
+        //        } else {
+        //            Swal.fire(
+        //                'Failed',
+        //                'Your file has not updated',
+        //                'failed'
+        //            )
+        //        }
+        //        })
+        //}
+        //function GetById(Id) {
+        //    $.ajax({
+        //        "url": "/Roles/Details/",
+        //        "type": "GET",
+        //        "dataType": "json",
+        //        "data": { id: Id }
+        //    }).then((result) => {
+        //        if (result.data.Id != null) {
+        //            document.getElementById("roleIdText").disabled = true;
+        //            $("#roleOdText").val(result.data[0].Id);
+        //            $("#roleNameText").val(result.data[0].Name);
+
+        //            $("#myModal").modal('show');
+        //            $("#Update").show();
+        //            $("#Save").hide();
+        //        }
+        //    });
+        //}
+        function Save() {
+            var role = new Object();
+            role.Name = $("#roleNameText").val();
+            $.ajax({
+                "url": "/Roles/Create",
+                "type": "POST",
+                "dataType": "json",
+                "data": { roleVM: role }
+
+            }).then((result) => {
+                if (result.data > 0) {
+                    Swal.fire(
+                        'Success',
+                        'Your file has been inserted',
+                        'Success'
+                    )
+                    $("#myModal").modal('hide');
+                }
+                else {
+                    Swal.fire(
+                        'Failed',
+                        'Your file not inserted',
+                        'failed'
+                    )
+                }
+            })
+        }
+        function Validation() {
+            if ($("#roleNameText").val() == "" || $("#roleNameText").val == "") {
+                Swal.fire('Please fill Name');
+            } else if ($("#roleIdText").val() == "" || $("roleIdText").val() == "") {
+                Save();
+            } else {
+                Edit($("#roleIdText").val());
+            }
+        }
+        function ClearScreen() {
+            document.getElementById("roleIdText").disabled = true;
+            $("#roleNameText").val('');
+            $("#Update").hide();
+        }
+    </script>
+    }
